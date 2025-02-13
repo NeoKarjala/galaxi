@@ -1,9 +1,9 @@
+import Calender from '../components/Calender';
+
 const Dashboard = () => {
   return (
     <>
-      <div>
-        <h1>Etusivu</h1>
-      </div>
+      <Calender />
     </>
   );
 };

@@ -7,7 +7,7 @@ const Root = () => {
       <div>
         <Navigation />
 
-        <div>
+        <div className='py-10 px-96'>
           <Outlet />
         </div>
       </div>

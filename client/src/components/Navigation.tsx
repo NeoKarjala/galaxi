@@ -5,7 +5,7 @@ const Navigation = () => {
     <>
       <div className='bg-secondary text-primary flex justify-center p-3'>
         <div>
-          <h1 className='text-5xl'>GaLaXi</h1>
+          <h1 className='text-5xl text-center py-3'>GaLaXi</h1>
           <Link className='btn btn-outline' to='/'>
             Dashboard
           </Link>

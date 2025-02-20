@@ -3,27 +3,28 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Lisää PostgreSQL-tietokantayhteys
+//  Configure PostgreSQL database connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Lisää palvelut (Controllers ja Swagger dokumentaatio)
+//  Add essential services: Controllers & Swagger documentation
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Ota Swagger käyttöön vain kehitysympäristössä
+//  Enable Swagger only in development mode
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Ota käyttöön reititys ja ohjaa pyynnöt oikeisiin kontrolleriin
-// app.UseHttpsRedirection();
+//  Enable middleware to handle API routing and security
+// app.UseHttpsRedirection(); // Disabled for now, enable if needed
 app.UseAuthorization();
 app.MapControllers();
 
+//  Run the application
 app.Run();

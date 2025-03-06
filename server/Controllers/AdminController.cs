@@ -45,6 +45,7 @@ namespace GaLaXiBackend.Controllers
 
         /// <summary>
         /// Updates any booking in the system.
+        /// Ensures updated details are valid.
         /// </summary>
         /// <param name="id">Booking ID</param>
         /// <param name="updatedBooking">Updated booking details</param>
@@ -61,8 +62,29 @@ namespace GaLaXiBackend.Controllers
             existingBooking.Description = updatedBooking.Description;
             existingBooking.StartTime = updatedBooking.StartTime;
             existingBooking.EndTime = updatedBooking.EndTime;
-            existingBooking.Location = updatedBooking.Location;
-            existingBooking.ComputerId = updatedBooking.ComputerId;
+            existingBooking.IsRoomBooking = updatedBooking.IsRoomBooking;
+
+            if (updatedBooking.IsRoomBooking)
+            {
+                if (string.IsNullOrEmpty(updatedBooking.RoomBookingType) ||
+                    (updatedBooking.RoomBookingType != "private" && updatedBooking.RoomBookingType != "public"))
+                {
+                    return BadRequest("Invalid room booking type. Must be 'private' or 'public'.");
+                }
+
+                existingBooking.RoomBookingType = updatedBooking.RoomBookingType;
+                existingBooking.ComputerId = null; // Clear computer ID when booking a room
+            }
+            else
+            {
+                if (!updatedBooking.ComputerId.HasValue || updatedBooking.ComputerId < 1 || updatedBooking.ComputerId > 5)
+                {
+                    return BadRequest("Invalid ComputerId. Must be between 1 and 5.");
+                }
+
+                existingBooking.ComputerId = updatedBooking.ComputerId;
+                existingBooking.RoomBookingType = null; // Clear room booking type when booking a computer
+            }
 
             _context.SaveChanges();
             return Ok("Booking updated successfully.");
@@ -72,7 +94,7 @@ namespace GaLaXiBackend.Controllers
         /// Deletes a booking by ID.
         /// </summary>
         /// <param name="id">Booking ID</param>
-        /// <returns>Success message or error</returns>
+        /// <returns>Success message or error if the booking is not found</returns>
         [HttpDelete("bookings/{id}")]
         public IActionResult DeleteBooking(Guid id)
         {

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using GaLaXiBackend.Data;
 using GaLaXiBackend.Models;
 
@@ -7,7 +8,7 @@ namespace GaLaXiBackend.Controllers
     /// <summary>
     /// Controller for managing bookings in the GaLaXi system.
     /// Provides endpoints to create, retrieve, update, and delete bookings.
-    /// Ensures that computers cannot be double-booked for overlapping time slots.
+    /// Ensures that computers cannot be double-booked and allows room reservations.
     /// </summary>
     [Route("api/bookings")]
     [ApiController]
@@ -15,10 +16,6 @@ namespace GaLaXiBackend.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        /// <summary>
-        /// Constructor that initializes the database context.
-        /// </summary>
-        /// <param name="context">Database context</param>
         public BookingController(ApplicationDbContext context)
         {
             _context = context;
@@ -29,49 +26,15 @@ namespace GaLaXiBackend.Controllers
         /// </summary>
         /// <returns>A list of all bookings</returns>
         [HttpGet]
-        public IActionResult GetAllBookings(
-              [FromQuery] Guid? userId,
-              [FromQuery] DateTime? startDate,
-              [FromQuery] DateTime? endDate,
-              [FromQuery] string? location,
-              [FromQuery] int page = 1,
-              [FromQuery] int pageSize = 10)
+        public IActionResult GetAllBookings()
         {
-            var query = _context.Bookings.AsQueryable();
-
-            if (userId.HasValue)
-            {
-                query = query.Where(b => b.UserId == userId.Value);
-            }
-
-            if (startDate.HasValue && endDate.HasValue)
-            {
-                query = query.Where(b => b.StartTime >= startDate.Value && b.EndTime <= endDate.Value);
-            }
-
-            if (!string.IsNullOrEmpty(location))
-            {
-                query = query.Where(b => b.Location == location);
-            }
-
-            // Apply pagination
-            var totalRecords = query.Count();
-            var bookings = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-
-            return Ok(new
-            {
-                TotalRecords = totalRecords,
-                Page = page,
-                PageSize = pageSize,
-                Data = bookings
-            });
+            var bookings = _context.Bookings.ToList();
+            return Ok(bookings);
         }
-
-
 
         /// <summary>
         /// Creates a new booking.
-        /// Ensures the selected computer is not already booked during the same time slot.
+        /// Ensures correct booking type (computer or room) and prevents double-booking conflicts.
         /// </summary>
         /// <param name="booking">Booking details received from request body</param>
         /// <returns>Success message or an error if the booking conflicts</returns>
@@ -88,15 +51,49 @@ namespace GaLaXiBackend.Controllers
                 return BadRequest("Invalid User ID.");
             }
 
-            // Check if the selected computer is already booked for the given time slot
-            bool isAlreadyBooked = _context.Bookings.Any(b =>
-                b.ComputerId == booking.ComputerId &&
-                ((b.StartTime < booking.EndTime && b.EndTime > booking.StartTime))
-            );
-
-            if (isAlreadyBooked)
+            // Ensure booking type is correctly set
+            if (booking.IsRoomBooking)
             {
-                return BadRequest("This computer is already booked for the selected time.");
+                if (string.IsNullOrEmpty(booking.RoomBookingType) ||
+                    (booking.RoomBookingType != "private" && booking.RoomBookingType != "public"))
+                {
+                    return BadRequest("Invalid room booking type. Must be 'private' or 'public'.");
+                }
+
+                // Check if the entire gaming room is already booked at the given time
+                bool isRoomAlreadyBooked = _context.Bookings.Any(b =>
+                    b.IsRoomBooking &&
+                    ((b.StartTime < booking.EndTime && b.EndTime > booking.StartTime))
+                );
+
+                if (isRoomAlreadyBooked)
+                {
+                    return BadRequest("The gaming room is already booked for the selected time.");
+                }
+
+                // Clear ComputerId if booking the whole room
+                booking.ComputerId = null;
+            }
+            else
+            {
+                if (!booking.ComputerId.HasValue || booking.ComputerId < 1 || booking.ComputerId > 5)
+                {
+                    return BadRequest("Invalid ComputerId. Must be between 1 and 5.");
+                }
+
+                // Check if the selected computer is already booked
+                bool isComputerAlreadyBooked = _context.Bookings.Any(b =>
+                    b.ComputerId == booking.ComputerId &&
+                    ((b.StartTime < booking.EndTime && b.EndTime > booking.StartTime))
+                );
+
+                if (isComputerAlreadyBooked)
+                {
+                    return BadRequest("This computer is already booked for the selected time.");
+                }
+
+                // Clear RoomBookingType if booking a computer
+                booking.RoomBookingType = null;
             }
 
             _context.Bookings.Add(booking);
@@ -106,6 +103,7 @@ namespace GaLaXiBackend.Controllers
 
         /// <summary>
         /// Updates an existing booking.
+        /// Ensures updated details are valid.
         /// </summary>
         /// <param name="id">Booking ID</param>
         /// <param name="updatedBooking">Updated booking details</param>
@@ -119,12 +117,32 @@ namespace GaLaXiBackend.Controllers
                 return NotFound("Booking not found.");
             }
 
-            // Update booking details
             existingBooking.Description = updatedBooking.Description;
             existingBooking.StartTime = updatedBooking.StartTime;
             existingBooking.EndTime = updatedBooking.EndTime;
-            existingBooking.Location = updatedBooking.Location;
-            existingBooking.ComputerId = updatedBooking.ComputerId; // Ensure computer selection is updated
+            existingBooking.IsRoomBooking = updatedBooking.IsRoomBooking;
+
+            if (updatedBooking.IsRoomBooking)
+            {
+                if (string.IsNullOrEmpty(updatedBooking.RoomBookingType) ||
+                    (updatedBooking.RoomBookingType != "private" && updatedBooking.RoomBookingType != "public"))
+                {
+                    return BadRequest("Invalid room booking type. Must be 'private' or 'public'.");
+                }
+
+                existingBooking.RoomBookingType = updatedBooking.RoomBookingType;
+                existingBooking.ComputerId = null; // Clear computer ID when booking a room
+            }
+            else
+            {
+                if (!updatedBooking.ComputerId.HasValue || updatedBooking.ComputerId < 1 || updatedBooking.ComputerId > 5)
+                {
+                    return BadRequest("Invalid ComputerId. Must be between 1 and 5.");
+                }
+
+                existingBooking.ComputerId = updatedBooking.ComputerId;
+                existingBooking.RoomBookingType = null; // Clear room booking type when booking a computer
+            }
 
             _context.SaveChanges();
             return Ok("Booking updated successfully.");

@@ -21,11 +21,14 @@ namespace GaLaXiBackend.Models
         public DateTime EndTime { get; set; } // Booking end time
 
         [Required]
-        public string Location { get; set; } // Location of booking
+        public bool IsRoomBooking { get; set; } // true = booking the whole room, false = booking a single computer
+
+        [Range(1, 5, ErrorMessage = "ComputerId must be between 1 and 5.")]
+        public int? ComputerId { get; set; } // Nullable: Only used when booking a computer
 
         [Required]
-        [Range(1, 5, ErrorMessage = "ComputerId must be between 1 and 5.")]
-        public int ComputerId { get; set; } // The selected computer (1-5)
+        [RegularExpression("private|public", ErrorMessage = "RoomBookingType must be 'private' or 'public'.")]
+        public string? RoomBookingType { get; set; } // Nullable: Only used when booking the whole room
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Timestamp of booking creation
     }

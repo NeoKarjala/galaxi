@@ -1,35 +1,81 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using GaLaXiBackend.Data;
 using GaLaXiBackend.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace GaLaXiBackend.Controllers
 {
-    // Defines this controller as handling authentication-related requests
+    /// <summary>
+    /// Controller for user authentication and JWT token generation.
+    /// </summary>
     [Route("api/auth")]
     [ApiController]
     public class AuthController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        // Constructor that injects the database context
-        public AuthController(ApplicationDbContext context)
+        public AuthController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
+        }
+
+        /// <summary>
+        /// Authenticates a user and generates a JWT token.
+        /// </summary>
+        /// <param name="loginRequest">User login details</param>
+        /// <returns>JWT token if authentication is successful</returns>
+        [HttpPost("login")]
+        public IActionResult Login([FromBody] User loginRequest)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Email == loginRequest.Email);
+            if (user == null)
+            {
+                return Unauthorized("Invalid email or password.");
+            }
+
+            // Generate JWT token
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.Name, user.Id.ToString()),
+                    new Claim(ClaimTypes.Role, user.Role)
+                }),
+                Expires = DateTime.UtcNow.AddHours(Convert.ToDouble(_configuration["Jwt:ExpiryInHours"])),
+                Issuer = _configuration["Jwt:Issuer"],
+                Audience = _configuration["Jwt:Audience"],
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+
+            return Ok(new { Token = tokenString, Role = user.Role });
         }
 
         /// <summary>
         /// Registers a new user in the system.
         /// </summary>
-        /// <param name="user">User data from the request body</param>
-        /// <returns>Success or error message</returns>
+        /// <param name="user">User registration details</param>
+        /// <returns>Success message or error</returns>
         [HttpPost("register")]
         public IActionResult Register([FromBody] User user)
         {
-            // Check if the email is already registered
             if (_context.Users.Any(u => u.Email == user.Email))
+            {
                 return BadRequest("Email is already in use.");
+            }
 
-            // Add the new user to the database
+            // Default role is "user", unless specified otherwise
+            user.Role = user.Role ?? "user";
+
             _context.Users.Add(user);
             _context.SaveChanges();
 

@@ -42,20 +42,25 @@ namespace GaLaXiBackend.Controllers
         public IActionResult CreateBooking([FromBody] Booking booking)
         {
             if (booking == null)
-            {
                 return BadRequest("Booking data is required.");
-            }
 
-            // Ensure the UserId exists before allowing the booking
             if (!_context.Users.Any(u => u.Id == booking.UserId))
-            {
                 return BadRequest("Invalid User ID.");
-            }
+
+            // Check if the computer is already booked for the same time slot
+            bool isAlreadyBooked = _context.Bookings.Any(b =>
+                b.ComputerId == booking.ComputerId &&
+                ((b.StartTime < booking.EndTime && b.EndTime > booking.StartTime))
+            );
+
+            if (isAlreadyBooked)
+                return BadRequest("This computer is already booked for the selected time.");
 
             _context.Bookings.Add(booking);
             _context.SaveChanges();
             return Ok(new { message = "Booking created successfully.", booking });
         }
+
 
         /// <summary>
         /// Updates an existing booking.

@@ -1,4 +1,5 @@
 using GaLaXiBackend.Data;
+using GaLaXiBackend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -28,6 +29,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // Add Authorization Middleware
 builder.Services.AddAuthorization();
+
+// Add Email Service
+builder.Services.AddScoped<EmailService>();
 
 // Add services: Controllers & Swagger
 builder.Services.AddControllers();

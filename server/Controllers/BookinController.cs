@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using GaLaXiBackend.Data;
 using GaLaXiBackend.Models;
+using GaLaXiBackend.Services;
 
 namespace GaLaXiBackend.Controllers
 {
@@ -15,10 +16,12 @@ namespace GaLaXiBackend.Controllers
     public class BookingController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly EmailService _emailService;
 
-        public BookingController(ApplicationDbContext context)
+        public BookingController(ApplicationDbContext context, EmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         /// <summary>
@@ -34,7 +37,7 @@ namespace GaLaXiBackend.Controllers
 
         /// <summary>
         /// Creates a new booking.
-        /// Ensures correct booking type (computer or room) and prevents double-booking conflicts.
+        /// Sends a confirmation email after booking.
         /// </summary>
         /// <param name="booking">Booking details received from request body</param>
         /// <returns>Success message or an error if the booking conflicts</returns>
@@ -98,12 +101,28 @@ namespace GaLaXiBackend.Controllers
 
             _context.Bookings.Add(booking);
             _context.SaveChanges();
+
+            // Send email confirmation
+            var user = _context.Users.FirstOrDefault(u => u.Id == booking.UserId);
+            if (user != null)
+            {
+                string subject = "Booking Confirmation - GaLaXi";
+                string body = $"Hello {user.Username},<br><br>"
+                            + $"Your booking has been confirmed.<br>"
+                            + $"📍 Booking Details:<br>"
+                            + $"🖥 Computer: {(booking.ComputerId.HasValue ? booking.ComputerId : "N/A")}<br>"
+                            + $"📅 Date: {booking.StartTime} - {booking.EndTime}<br>"
+                            + $"🎮 Room Booking: {(booking.IsRoomBooking ? booking.RoomBookingType : "N/A")}<br><br>"
+                            + $"Best regards,<br>GaLaXi Team";
+
+                _emailService.SendEmail(user.Email, subject, body);
+            }
+
             return Ok(new { message = "Booking created successfully.", booking });
         }
 
         /// <summary>
         /// Updates an existing booking.
-        /// Ensures updated details are valid.
         /// </summary>
         /// <param name="id">Booking ID</param>
         /// <param name="updatedBooking">Updated booking details</param>
@@ -131,7 +150,7 @@ namespace GaLaXiBackend.Controllers
                 }
 
                 existingBooking.RoomBookingType = updatedBooking.RoomBookingType;
-                existingBooking.ComputerId = null; // Clear computer ID when booking a room
+                existingBooking.ComputerId = null;
             }
             else
             {
@@ -141,7 +160,7 @@ namespace GaLaXiBackend.Controllers
                 }
 
                 existingBooking.ComputerId = updatedBooking.ComputerId;
-                existingBooking.RoomBookingType = null; // Clear room booking type when booking a computer
+                existingBooking.RoomBookingType = null;
             }
 
             _context.SaveChanges();

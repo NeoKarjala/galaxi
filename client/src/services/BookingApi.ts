@@ -12,7 +12,7 @@ export interface Booking {
     status: string;
 }
 
-export const getAllBookings = async () => {
+export const getAllBookingsApi = async () => {
     try {
         const response = await axios.get<Booking[]>(API_URL);
         return response.data.map(booking => ({ id: booking.id, status: 'Varattu' }));
@@ -22,7 +22,7 @@ export const getAllBookings = async () => {
     }
 };
 
-export const getUserBooking = async (id: string) => {
+export const getUserBookingApi = async (id: string) => {
     try {
         const response = await axios.get<Booking>(`${API_URL}/${id}`);
         return response.data;
@@ -32,7 +32,7 @@ export const getUserBooking = async (id: string) => {
     }
 };
 
-export const createBooking = async (booking: Booking) => {
+export const createBookingApi = async (booking: Booking) => {
     try {
         const response = await axios.post(API_URL, booking);
         return response.data;
@@ -42,7 +42,7 @@ export const createBooking = async (booking: Booking) => {
     }
 };
 
-export const updateBooking = async (id: string, updatedBooking: Booking) => {
+export const updateBookingApi = async (id: string, updatedBooking: Booking) => {
     try {
         const response = await axios.put(`${API_URL}/${id}`, updatedBooking);
         return response.data;
@@ -52,7 +52,7 @@ export const updateBooking = async (id: string, updatedBooking: Booking) => {
     }
 };
 
-export const deleteBooking = async (id: string) => {
+export const deleteBookingApi = async (id: string) => {
     try {
         const response = await axios.delete(`${API_URL}/${id}`);
         return response.data;

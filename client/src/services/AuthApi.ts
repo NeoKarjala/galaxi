@@ -13,7 +13,7 @@ const apiClient = axios.create({
 });
 
 // Kirjautumistoiminto
-export const loginAppi = async (email: string, password: string): Promise<AuthResponse> => {
+export const loginApi = async (email: string, password: string): Promise<AuthResponse> => {
   try {
     // Käytetään aiemmin luotua apiClient-instanssia
     const response = await apiClient.post<AuthResponse>('/auth/login', { email, password });

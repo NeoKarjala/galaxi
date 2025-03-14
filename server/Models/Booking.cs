@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GaLaXiBackend.Models
 {
@@ -13,17 +12,24 @@ namespace GaLaXiBackend.Models
         public Guid UserId { get; set; } // The user who made the booking
 
         [Required]
-        public string Description { get; set; } // Details about the booking
+        public string Description { get; set; } // Booking details
 
         [Required]
-        public DateTime StartTime { get; set; } // When the booking starts
+        public DateTime StartTime { get; set; } // Booking start time
 
         [Required]
-        public DateTime EndTime { get; set; } // When the booking ends
+        public DateTime EndTime { get; set; } // Booking end time
 
         [Required]
-        public string Location { get; set; } // Where the booking takes place
+        public bool IsRoomBooking { get; set; } // true = booking the whole room, false = booking a single computer
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Timestamp of when the booking was created
+        [Range(1, 5, ErrorMessage = "ComputerId must be between 1 and 5.")]
+        public int? ComputerId { get; set; } // Nullable: Only used when booking a computer
+
+        [Required]
+        [RegularExpression("private|public", ErrorMessage = "RoomBookingType must be 'private' or 'public'.")]
+        public string? RoomBookingType { get; set; } // Nullable: Only used when booking the whole room
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Timestamp of booking creation
     }
 }

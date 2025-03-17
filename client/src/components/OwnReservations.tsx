@@ -1,4 +1,4 @@
-const OwnResevations = () => {
+const OwnReservations = () => {
   return (
     <>
       <div>
@@ -8,4 +8,4 @@ const OwnResevations = () => {
   );
 };
 
-export default OwnResevations;
+export default OwnReservations;

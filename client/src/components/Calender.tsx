@@ -28,12 +28,12 @@ const Calender = () => {
   };
 
   return (
-    <div className="p-8 rounded-md bg-primary text-secondary">
+    <div className="p-8 rounded-md bg-primary">
       <div className="grid grid-cols-5 gap-4">
         {days.map((day) => (
           <div key={day} className="bg-secondary p-2 rounded-md text-center text-black font-bold">
             {day}
-            <div className="flex flex-col mt-2">
+            <div className="flex flex-col mt-2 text-secondary">
               {times.map((time) => {
                 const slot = `${day}-${time}`;
                 const isReserved = reservations.has(slot);

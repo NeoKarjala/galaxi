@@ -7,7 +7,7 @@ interface FormData {
   endTime: string;
 }
 
-const OwnResevations = () => {
+const OwnReservations = () => {
   const [formData, setFormData] = useState<FormData>({
     context: '',
     date: '',
@@ -123,4 +123,4 @@ const OwnResevations = () => {
   );
 };
 
-export default OwnResevations;
+export default OwnReservations;

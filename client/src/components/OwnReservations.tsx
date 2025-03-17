@@ -33,6 +33,11 @@ const OwnReservations = () => {
     }
   };
 
+  const handleDelete = (indexToDelete: number) => {
+    console.log(savedDate);
+    setSavedData(savedDate.filter((_, index) => index !== indexToDelete));
+  };
+
   return (
     <>
       <div className='flex h-full'>
@@ -42,7 +47,7 @@ const OwnReservations = () => {
             {savedDate.map((item, index) => (
               <div
                 key={index}
-                className='card-body border flex gap-4 flex-row rounded-md shadow'
+                className='card-body border flex gap-4 flex-row rounded-md shadow items-center'
               >
                 <p>
                   <strong>Kuvaus:</strong> {item.context}
@@ -57,6 +62,13 @@ const OwnReservations = () => {
                 <p>
                   <strong>Lopetus aika:</strong> {item.endTime}
                 </p>
+                <button className='btn btn-outline btn-warning'>Muokkaa</button>
+                <button
+                  onClick={() => handleDelete(index)}
+                  className='btn btn-outline btn-error'
+                >
+                  Poista
+                </button>
               </div>
             ))}
           </div>

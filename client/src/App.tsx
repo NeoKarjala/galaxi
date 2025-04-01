@@ -1,7 +1,7 @@
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import Dashboard from './routes/Dashboard';
 import Root from './routes/Root';
-import OwnResevations from './components/OwnSerservations';
+import OwnReservations from './components/OwnReservations';
 
 function App() {
   return (
@@ -10,7 +10,7 @@ function App() {
         <Routes>
           <Route path='/' element={<Root />}>
             <Route index element={<Dashboard />} />
-            <Route path='ownReservations' element={<OwnResevations />} />
+            <Route path='ownReservations' element={<OwnReservations />} />
           </Route>
         </Routes>
       </BrowserRouter>

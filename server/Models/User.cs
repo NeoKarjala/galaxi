@@ -9,10 +9,10 @@ namespace GaLaXiBackend.Models
         public Guid Id { get; set; } = Guid.NewGuid(); // Unique identifier for the user
 
         [Required, EmailAddress]
-        public string Email { get; set; } // User's email address
+        public required string Email { get; set; } // User's email address
 
         [Required]
-        public string Username { get; set; } // Display name of the user
+        public required string Username { get; set; } // Display name of the user
 
         [Required]
         public string Role { get; set; } = "user"; // User role (default is "user")

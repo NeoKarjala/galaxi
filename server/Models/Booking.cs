@@ -12,7 +12,7 @@ namespace GaLaXiBackend.Models
         public Guid UserId { get; set; } // The user who made the booking
 
         [Required]
-        public string Description { get; set; } // Booking details
+        public required string Description { get; set; } // Booking details
 
         [Required]
         public DateTime StartTime { get; set; } // Booking start time

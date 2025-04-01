@@ -32,15 +32,28 @@ namespace GaLaXiBackend.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] User loginRequest)
         {
+            if (loginRequest == null || string.IsNullOrEmpty(loginRequest.Email))
+            {
+                return BadRequest("Invalid login request.");
+            }
+
             var user = _context.Users.FirstOrDefault(u => u.Email == loginRequest.Email);
             if (user == null)
             {
                 return Unauthorized("Invalid email or password.");
             }
 
+            // Ensure JWT key is valid
+            var jwtKey = _configuration["Jwt:Key"];
+            if (string.IsNullOrEmpty(jwtKey))
+            {
+                throw new Exception("JWT Key is missing from configuration.");
+            }
+
             // Generate JWT token
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+            var key = Encoding.UTF8.GetBytes(jwtKey);
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
@@ -48,7 +61,7 @@ namespace GaLaXiBackend.Controllers
                     new Claim(ClaimTypes.Name, user.Id.ToString()),
                     new Claim(ClaimTypes.Role, user.Role)
                 }),
-                Expires = DateTime.UtcNow.AddHours(Convert.ToDouble(_configuration["Jwt:ExpiryInHours"])),
+                Expires = DateTime.UtcNow.AddHours(Convert.ToDouble(_configuration["Jwt:ExpiryInHours"] ?? "2")),
                 Issuer = _configuration["Jwt:Issuer"],
                 Audience = _configuration["Jwt:Audience"],
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)

@@ -1,125 +1,79 @@
-import { useState } from 'react';
-
-interface FormData {
-  context: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-}
+import { useState, useEffect } from 'react';
+import {
+  getUserBookingApi,
+  deleteBookingApi,
+  Booking,
+} from '../services/BookingApi';
 
 const OwnReservations = () => {
-  const [formData, setFormData] = useState<FormData>({
-    context: '',
-    date: '',
-    startTime: '',
-    endTime: '',
-  });
-  const [savedDate, setSavedData] = useState<FormData[]>([]);
+  const userId = '123'; // Kovakoodattu käyttäjä
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (
-      formData.context &&
-      formData.date &&
-      formData.startTime &&
-      formData.endTime
-    ) {
-      setSavedData([...savedDate, formData]);
-      setFormData({ context: '', date: '', startTime: '', endTime: '' });
+  // Hae varaukset
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      const data = await getUserBookingApi(userId);
+      setBookings(Array.isArray(data) ? data : [data]); // Varmistetaan, että saadaan taulukko
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Poista varaus
+  const handleDelete = async (id?: string) => {
+    if (!id) return;
+    if (confirm('Haluatko varmasti poistaa varauksen?')) {
+      try {
+        await deleteBookingApi(id);
+        setBookings((prev) => prev.filter((b) => b.id !== id));
+      } catch (err) {
+        alert('Poistaminen epäonnistui');
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchBookings();
+  }, []);
+
+  if (loading) return <p>Ladataan varauksia...</p>;
+  if (error) return <p>Jottain meni pieleen: {error}</p>;
+
   return (
-    <>
-      <div className='flex h-full'>
-        <div className='w-3/4 border p-5'>
-          <h1 className='text-2xl font-bold'>Omat varaukset</h1>
-          <div className='flex flex-col gap-4'>
-            {savedDate.map((item, index) => (
-              <div
-                key={index}
-                className='card-body border flex gap-4 flex-row rounded-md shadow'
-              >
-                <p>
-                  <strong>Kuvaus:</strong> {item.context}
-                </p>
-                <p>
-                  <strong>Päivämäärä:</strong> {item.date}
-                </p>
-                <p>
-                  <strong>Aloitus aika:</strong>
-                  {item.startTime}
-                </p>
-                <p>
-                  <strong>Lopetus aika:</strong> {item.endTime}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className='border p-5'>
-          <h1 className='text-2xl font-bold'>Uuden varauksen teko</h1>
-          <form onSubmit={handleSubmit}>
-            <div className='form-control mb-4'>
-              <label className='label'>
-                <span className='label-text'>Kuvaus:</span>
-              </label>
-              <input
-                type='text'
-                name='context'
-                value={formData.context}
-                onChange={handleChange}
-                required
-                className='input input-bordered'
-              />
-            </div>
-            <div className='form-control mb-4'>
-              <label className='label'>
-                <span className='label-text'>Päivämäärä:</span>
-              </label>
-              <input
-                type='date'
-                name='date'
-                value={formData.date}
-                onChange={handleChange}
-                className='input input-bordered'
-              />
-            </div>
-            <div className='form-control mb-4'>
-              <label className='label'>
-                <span className='label-text'>Aloitus aika:</span>
-              </label>
-              <input
-                type='time'
-                name='startTime'
-                value={formData.startTime}
-                onChange={handleChange}
-                className='input input-bordered'
-              />
-              <div className='form-control mb-4'>
-                <label className='label'>
-                  <span className='label-text'>Lopetus aika:</span>
-                </label>
-                <input
-                  type='time'
-                  name='endTime'
-                  value={formData.endTime}
-                  onChange={handleChange}
-                  className='input input-bordered'
-                />
+    <div className='p-5'>
+      <h1 className='text-2xl font-bold mb-4'>Omat varaukset</h1>
+      {bookings.length === 0 ? (
+        <p>Ei varauksia.</p>
+      ) : (
+        <div className='flex flex-col gap-4'>
+          {bookings.map((booking) => (
+            <div
+              key={booking.id}
+              className='card-body border flex gap-4 flex-col rounded-md shadow p-4'
+            >
+              <p><strong>Kuvaus:</strong> {booking.description}</p>
+              <p><strong>Aika:</strong> {booking.startTime} - {booking.endTime}</p>
+              <p><strong>Paikka:</strong> {booking.location}</p>
+              <div className='flex gap-2'>
+                <button className='btn btn-sm btn-warning'>Muokkaa</button>
+                <button
+                  className='btn btn-sm btn-error'
+                  onClick={() => handleDelete(booking.id)}
+                >
+                  Poista
+                </button>
               </div>
             </div>
-            <button type='submit' className='btn btn-primary ml-2'>
-              Lisää
-            </button>
-          </form>
+          ))}
         </div>
-      </div>
-    </>
+      )}
+    </div>
   );
 };
 

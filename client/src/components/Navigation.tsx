@@ -22,6 +22,14 @@ const Navigation = () => {
                 Omat varaukset
               </Link>
             </li>
+            <li>
+              <Link
+                className="btn btn-outline bg-primary hover:border-primary hover:text-primary"
+                to="/AllReservations"
+              >
+                Kaikki varaukset
+              </Link>
+            </li>
           </ul>
         </div>
         <div>

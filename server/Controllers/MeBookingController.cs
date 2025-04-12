@@ -9,7 +9,7 @@ namespace GaLaXiBackend.Controllers
 {
     [Route("api/me/bookings")]
     [ApiController]
-    [Authorize(Roles = "user")]
+    [Authorize(Roles = "user,admin")]
     public class MeBookingsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;

@@ -59,7 +59,7 @@ namespace GaLaXiBackend.Controllers
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.Name, user.Id.ToString()),
-                    new Claim(ClaimTypes.Role, user.Role)
+                    new Claim("role", user.Role)
                 }),
                 Expires = DateTime.UtcNow.AddHours(Convert.ToDouble(_configuration["Jwt:ExpiryInHours"] ?? "2")),
                 Issuer = _configuration["Jwt:Issuer"],

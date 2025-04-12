@@ -3,11 +3,16 @@ import { useState, useEffect } from "react";
 interface ReservationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { date: string; time: string; description: string; device: string }) => void;
-  selectedSlot: string | null; // Valittu kellonaika ja päivä muodossa "Ma-08.00"
+  selectedSlot: string | null;
+  onSubmit: (bookingData: any) => Promise<void>;
 }
 
-function ReservationModal({ isOpen, onClose, onSubmit, selectedSlot }: ReservationModalProps) {
+const ReservationModal: React.FC<ReservationModalProps> = ({
+  isOpen,
+  onClose,
+  selectedSlot,
+  onSubmit
+}) => {
   // Mock-laitteet ennen kuin API on käytössä
   const mockDevices = ["PC", "Pöytä", "TV"];
 
@@ -15,6 +20,7 @@ function ReservationModal({ isOpen, onClose, onSubmit, selectedSlot }: Reservati
   const [formData, setFormData] = useState({
     date: "",
     time: "",
+    endTime: "",
     description: "",
     device: "",
   });
@@ -37,10 +43,10 @@ function ReservationModal({ isOpen, onClose, onSubmit, selectedSlot }: Reservati
   };
 
   // Lomakkeen lähetys
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Mock data lähetetty:", formData); // Vain testaukseen, voi poistaa API:n valmistuessa
-    onSubmit(formData);
+    await onSubmit(formData);
     onClose();
   };
 
@@ -64,7 +70,7 @@ function ReservationModal({ isOpen, onClose, onSubmit, selectedSlot }: Reservati
           {/* Päättymisaika (käyttäjä syöttää) */}
           <div className="form-control mb-4">
             <label className="label">Päättymisaika:</label>
-            <input type="time" name="endTime" onChange={handleChange} required className="input input-bordered" />
+            <input type="time" name="endTime" value={formData.endTime} onChange={handleChange} required className="input input-bordered" />
           </div>
 
           {/* Kuvaus */}
@@ -95,6 +101,6 @@ function ReservationModal({ isOpen, onClose, onSubmit, selectedSlot }: Reservati
       </div>
     </div>
   );
-}
+};
 
 export default ReservationModal;

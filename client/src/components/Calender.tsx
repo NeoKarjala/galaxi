@@ -30,6 +30,8 @@ const Calender = () => {
 
   const [booking, setBooking] = useState<Booking[]>([]);
 
+  const [error, setError] = useState();
+
   useEffect(() => {
     getBookings();
   }, []);
@@ -64,48 +66,57 @@ const Calender = () => {
         getBookings();
       })
       .catch(() => {
-        console.log("create error");
+        setError("Luonti epäonnistui");
       });
   };
 
   return (
-    <div className="p-8 rounded-md bg-primary">
-      <div className="grid grid-cols-5 gap-4">
-        {days.map((day) => (
-          <div
-            key={day}
-            className="bg-secondary p-2 rounded-md text-center text-black font-bold"
-          >
-            {day}
-            <div className="flex flex-col mt-2 text-secondary">
-              {times.map((time) => {
-                const slot = `${day}-${time}`;
-                const isReserved = reservations.has(slot);
-                return (
-                  <button
-                    key={slot}
-                    className={`p-2 m-1 rounded-md text-center font-semibold ${
-                      isReserved ? "bg-red-500 cursor-not-allowed" : "bg-white"
-                    }`}
-                    onClick={() => handleOpenModal(slot)}
-                    disabled={isReserved}
-                  >
-                    {time}
-                  </button>
-                );
-              })}
+    <>
+      <div className="p-8 rounded-md bg-primary">
+        <div className="grid grid-cols-5 gap-4">
+          {days.map((day) => (
+            <div
+              key={day}
+              className="bg-secondary p-2 rounded-md text-center text-white font-bold"
+            >
+              {day}
+              <div className="flex flex-col mt-2 text-secondary">
+                {times.map((time) => {
+                  const slot = `${day}-${time}`;
+                  const isReserved = reservations.has(slot);
+                  return (
+                    <button
+                      key={slot}
+                      className={`p-2 m-1 rounded-md text-center font-semibold ${
+                        isReserved
+                          ? "bg-red-500 cursor-not-allowed"
+                          : "bg-white"
+                      }`}
+                      onClick={() => handleOpenModal(slot)}
+                      disabled={isReserved}
+                    >
+                      {time}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      <ReservationModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        selectedSlot={selectedSlot}
-        onCreateBooking={handleCreateBooking}
-      />
-    </div>
+        <ReservationModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          selectedSlot={selectedSlot}
+          onCreateBooking={handleCreateBooking}
+        />
+      </div>
+      {error && (
+        <div role="alert" className="alert alert-error">
+          <span>{error}</span>
+        </div>
+      )}
+    </>
   );
 };
 

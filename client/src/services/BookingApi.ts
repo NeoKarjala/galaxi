@@ -75,9 +75,16 @@ export const createBookingApi = async (newBooking: Booking): Promise<void> => {
   };
 
 // Päivittää olemassa olevan varauksen
-export const updateBookingApi = async (id: string, updatedBooking: Booking) => {
+export const updateBookingApi = async (updatedBooking: Booking): Promise<Booking> => {
     try {
-        const response = await apiClient.put(`/bookings/${id}`, updatedBooking);
+        console.log("api", updatedBooking);
+        
+        const token = localStorage.getItem("jwtToken");
+        const response = await apiClient.put(`/me/bookings/${updatedBooking.id}`, updatedBooking, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
         return response.data;
     } catch (error) {
         const err = error as AxiosError;

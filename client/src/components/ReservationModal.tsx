@@ -4,16 +4,20 @@ import { Booking } from "../services/BookingApi";
 interface ReservationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedSlot: string | null;
-  // onSubmit: (bookingData: Booking) => Promise<void>;
-  onCreateBooking: (newBooking: Booking) => void;
+  selectedSlot?: string | null;
+  mode: string;
+  initialData?: Booking;
+  onSubmit: (bookingData: Booking) => void;
+  onCreateBooking?: (newBooking: Booking) => void;
 }
 
 const ReservationModal = ({
   isOpen,
   onClose,
   selectedSlot,
-  // onSubmit,
+  initialData,
+  mode = "create",
+  onSubmit,
   onCreateBooking,
 }: ReservationModalProps) => {
   const [bookingData, setBookingData] = useState<Booking>({
@@ -25,6 +29,8 @@ const ReservationModal = ({
     isRoomBooking: false,
     roomBookingType: "public",
   });
+
+  const [error, setError] = useState<string | null>(null);
 
   // Päivitetään lomaketiedot, kun käyttäjä valitsee ajan
   useEffect(() => {
@@ -54,6 +60,13 @@ const ReservationModal = ({
     }
   }, [selectedSlot]);
 
+  useEffect(() => {
+    if (isOpen && mode === "edit" && initialData) {
+      setBookingData(initialData);
+    }
+    setError(null);
+  }, [isOpen, initialData, mode]);
+
   // Lomakekenttien käsittely
   const handleChange = (
     e: React.ChangeEvent<
@@ -70,7 +83,14 @@ const ReservationModal = ({
   // Lomakkeen lähetys
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onCreateBooking(bookingData);
+    console.log(bookingData);
+
+    if (onCreateBooking) {
+      onCreateBooking(bookingData);
+    }
+    if (onSubmit) {
+      onSubmit(bookingData);
+    }
     onClose();
   };
 
@@ -79,7 +99,9 @@ const ReservationModal = ({
   return (
     <div className="modal modal-open">
       <div className="modal-box">
-        <h2 className="font-bold text-xl mb-4">Tee varaus</h2>
+        <h2 className="font-bold text-xl mb-4">
+          {mode === "edit" ? "Muokkaa varausta" : "Tee varaus"}
+        </h2>
         <form onSubmit={handleSubmit}>
           {/* Päivämäärä ja aika (lukittu) */}
 
@@ -157,6 +179,30 @@ const ReservationModal = ({
               className="textarea textarea-bordered"
             />
           </div>
+          {/* Valitse tietokone */}
+          <div className="form-control mb-4">
+            <label className="label">Valitse tietokone:</label>
+            <select
+              name="computerId"
+              value={bookingData.computerId}
+              onChange={handleChange}
+              className="select select-bordered"
+              required
+            >
+              <option value="">-- Valitse tietokone --</option>
+              {Array.from({ length: 5 }, (_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  Tietokone {i + 1}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {error && (
+            <div className="alert alert-error">
+              <span>{error}</span>
+            </div>
+          )}
 
           {/* Napit */}
           <div className="modal-action">
@@ -164,7 +210,7 @@ const ReservationModal = ({
               Peruuta
             </button>
             <button type="submit" className="btn btn-primary">
-              Varaa
+              {mode === "edit" ? "Päivitä" : "Varaa"}
             </button>
           </div>
         </form>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -7,7 +7,7 @@ interface User {
   username: string;
 }
 
-const Login: React.FC = () => {
+const Login = () => {
   const [email, setEmail] = useState<string>("user@example.com");
   const [username, setUsername] = useState<string>("string");
   const [error, setError] = useState<string>("");

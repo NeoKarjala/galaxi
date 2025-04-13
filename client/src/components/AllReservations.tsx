@@ -48,7 +48,7 @@ const AllReservations = () => {
                 <strong>Aika:</strong> {booking.startTime} – {booking.endTime}
               </p>
               <p>
-                <strong>Paikka:</strong> {booking.location}
+                <strong>Paikka:</strong> {booking.computerId}
               </p>
             </div>
           ))}

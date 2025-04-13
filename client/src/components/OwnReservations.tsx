@@ -26,13 +26,13 @@ const OwnReservations = () => {
   // Poista varaus
   const handleDelete = async (id?: string) => {
     if (!id) return;
-    if (confirm("Haluatko varmasti poistaa varauksen?")) {
-      try {
-        await deleteBookingApi(id);
-        setBookings((prev) => prev.filter((b) => b.id !== id));
-      } catch {
-        alert("Poistaminen epäonnistui");
-      }
+
+    try {
+      console.log(id);
+      await deleteBookingApi(id);
+      setBookings((prev) => prev.filter((b) => b.id !== id));
+    } catch {
+      alert("Poistaminen epäonnistui");
     }
   };
 
@@ -56,13 +56,23 @@ const OwnReservations = () => {
               className="card-body border flex gap-4 flex-col rounded-md shadow p-4"
             >
               <p>
-                <strong>Kuvaus:</strong> {booking.description}
+                <strong>Kuvaus : </strong> {booking.description}
               </p>
               <p>
-                <strong>Aika:</strong> {booking.startTime} - {booking.endTime}
+                <strong>Aika : </strong>
+                {new Date(booking.startTime).toLocaleDateString("fi-FI")}
               </p>
               <p>
-                <strong>Paikka:</strong> {booking.location}
+                <strong>Klo : </strong>
+                {new Date(booking.startTime).toLocaleTimeString("fi-FI", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+                -
+                {new Date(booking.endTime).toLocaleTimeString("fi-FI", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </p>
               <div className="flex gap-2">
                 <button className="btn btn-sm btn-warning">Muokkaa</button>

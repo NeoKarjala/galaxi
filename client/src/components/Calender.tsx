@@ -1,18 +1,37 @@
 import { useState, useEffect } from "react";
-import ReservationModal from "./ReservationModal"; // Lisää modal
+import ReservationModal from "./ReservationModal";
+import {
+  Booking,
+  createBookingApi,
+  getUserBookingApi,
+} from "../services/BookingApi";
 
 const Calender = () => {
-  const times = ["08.00", "09.00", "10.00", "11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.00", "18.00", "19.00", "20.00"];
+  const times = [
+    "08.00",
+    "09.00",
+    "10.00",
+    "11.00",
+    "12.00",
+    "13.00",
+    "14.00",
+    "15.00",
+    "16.00",
+    "17.00",
+    "18.00",
+    "19.00",
+    "20.00",
+  ];
   const days = ["Ma", "Ti", "Ke", "To", "Pe"];
 
   const [reservations, setReservations] = useState<Set<string>>(new Set());
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
-  // Mock-varaukset
+  const [booking, setBooking] = useState<Booking[]>([]);
+
   useEffect(() => {
-    const mockReservations = [{ date: "Ma", time: "08.00" }, { date: "Ti", time: "10.00" }, { date: "Ke", time: "14.00" }];
-    setReservations(new Set(mockReservations.map((res) => `${res.date}-${res.time}`)));
+    getBookings();
   }, []);
 
   const handleOpenModal = (slot: string) => {
@@ -27,11 +46,36 @@ const Calender = () => {
     setSelectedSlot(null);
   };
 
+  const getBookings = async () => {
+    getUserBookingApi()
+      .then((resp: Booking[]) => {
+        setBooking(resp);
+      })
+      .catch(() => {
+        console.log("get error");
+      });
+  };
+
+  const handleCreateBooking = (booking: Booking) => {
+    createBookingApi(booking)
+      .then(() => {
+        console.log("Created");
+
+        getBookings();
+      })
+      .catch(() => {
+        console.log("create error");
+      });
+  };
+
   return (
     <div className="p-8 rounded-md bg-primary">
       <div className="grid grid-cols-5 gap-4">
         {days.map((day) => (
-          <div key={day} className="bg-secondary p-2 rounded-md text-center text-black font-bold">
+          <div
+            key={day}
+            className="bg-secondary p-2 rounded-md text-center text-black font-bold"
+          >
             {day}
             <div className="flex flex-col mt-2 text-secondary">
               {times.map((time) => {
@@ -40,7 +84,9 @@ const Calender = () => {
                 return (
                   <button
                     key={slot}
-                    className={`p-2 m-1 rounded-md text-center font-semibold ${isReserved ? "bg-red-500 cursor-not-allowed" : "bg-white"}`}
+                    className={`p-2 m-1 rounded-md text-center font-semibold ${
+                      isReserved ? "bg-red-500 cursor-not-allowed" : "bg-white"
+                    }`}
                     onClick={() => handleOpenModal(slot)}
                     disabled={isReserved}
                   >
@@ -53,8 +99,12 @@ const Calender = () => {
         ))}
       </div>
 
-      {/* Modal komponentti */}
-      <ReservationModal isOpen={isModalOpen} onClose={handleCloseModal} onSubmit={() => {}} selectedSlot={selectedSlot} />
+      <ReservationModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        selectedSlot={selectedSlot}
+        onCreateBooking={handleCreateBooking}
+      />
     </div>
   );
 };

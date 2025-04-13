@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosResponse } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { addAuthorizationHeader, getToken, isAdmin } from '../utils/jwtUtils';
 
 const apiClient = axios.create({
@@ -7,12 +7,13 @@ const apiClient = axios.create({
 });
 
 export interface Booking {
-    id?: string;
-    userId: string;
+    id: string;
     description: string;
     startTime: string;
     endTime: string;
-    location: string;
+    computerId?: number;
+    isRoomBooking?: boolean;
+  roomBookingType?: "private" | "public";
 }
 
 // Hakee kaikki varaukset
@@ -59,15 +60,19 @@ export const getUserBookingApi = async () => {
 };
 
 // Luo uuden varauksen
-export const createBookingApi = async (booking: Booking) => {
-    try {
-        const response: AxiosResponse = await apiClient.post('/bookings', booking);
-        return response.data;
-    } catch (error) {
-        const err = error as AxiosError;
-        throw new Error(`Error fetching message: ${err.response?.data}`);
-    }
-};
+export const createBookingApi = async (newBooking: Booking): Promise<void> => {
+    console.log("apiCreate", newBooking);
+    
+    const token = localStorage.getItem("jwtToken");
+    const response = await apiClient.post('/me/bookings', newBooking, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log(response.data);
+    
+    return response.data;
+  };
 
 // Päivittää olemassa olevan varauksen
 export const updateBookingApi = async (id: string, updatedBooking: Booking) => {
@@ -81,12 +86,22 @@ export const updateBookingApi = async (id: string, updatedBooking: Booking) => {
 };
 
 // Poistaa varauksen
-export const deleteBookingApi = async (id: string) => {
+export const deleteBookingApi = async (id: string): Promise<void> => {
     try {
-        const response = await apiClient.delete(`/bookings/${id}`);
-        return response.data;
+      console.log("api", id);
+      const token = localStorage.getItem("jwtToken");
+  
+      const response = await apiClient.delete(`/me/bookings/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(response.data);
+      
+      return response.data;
     } catch (error) {
-        const err = error as AxiosError;
-        throw new Error(`Error fetching message: ${err.response?.data}`);
+      const err = error as AxiosError;
+      throw new Error(`Error fetching message: ${err.response?.data}`);
     }
-};
+  };
+  

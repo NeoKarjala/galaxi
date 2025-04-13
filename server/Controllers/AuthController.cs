@@ -61,7 +61,7 @@ namespace GaLaXiBackend.Controllers
                     new Claim(ClaimTypes.Name, user.Id.ToString()),
                     new Claim("role", user.Role)
                 }),
-                Expires = DateTime.UtcNow.AddHours(Convert.ToDouble(_configuration["Jwt:ExpiryInHours"] ?? "2")),
+                Expires = DateTime.UtcNow.AddSeconds(Convert.ToDouble(_configuration["Jwt:ExpiryInHours"] ?? "15")),
                 Issuer = _configuration["Jwt:Issuer"],
                 Audience = _configuration["Jwt:Audience"],
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)

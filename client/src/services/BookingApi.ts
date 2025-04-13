@@ -26,10 +26,20 @@ export const getAllBookingsApi = async () => {
     }
 };
 
-// Hakee varaukset käyttäjän ID:n perusteella
-export const getUserBookingApi = async (id: string) => {
+// Hakee varaukset käyttäjän ID:n perusteella käyttäen JWT tokenia
+export const getUserBookingApi = async () => {
+    const token = localStorage.getItem('jwtToken'); // Haetaan token localStoragesta
+
+    if (!token) {
+        throw new Error('User is not authenticated');
+    }
+
     try {
-        const response = await apiClient.get<Booking>(`/bookings/${id}`);
+        const response = await apiClient.get<Booking[]>('/me/bookings', {
+            headers: {
+                Authorization: `Bearer ${token}`, // Token lähetetään Authorization-headerissä
+            },
+        });
         return response.data;
     } catch (error) {
         const err = error as AxiosError;
@@ -37,7 +47,7 @@ export const getUserBookingApi = async (id: string) => {
     }
 };
 
-//Luo uuden varauksen
+// Luo uuden varauksen
 export const createBookingApi = async (booking: Booking) => {
     try {
         const response: AxiosResponse = await apiClient.post('/bookings', booking);

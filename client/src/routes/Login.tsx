@@ -8,8 +8,8 @@ interface User {
 }
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState<string>("");
-  const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState<string>("user@example.com");
+  const [username, setUsername] = useState<string>("string");
   const [error, setError] = useState<string>("");
 
   const navigate = useNavigate();
@@ -33,6 +33,7 @@ const Login: React.FC = () => {
       // If the response is successful, the JWT token is in the response data
       const token = response.data.token;
       console.log("JWT Token:", token);
+      console.log("UserData:", user);
 
       // Optionally, you can store the token in localStorage or a state management library like Redux
       localStorage.setItem("jwtToken", token);

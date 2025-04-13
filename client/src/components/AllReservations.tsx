@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { getAllBookingsApi, Booking } from '../services/BookingApi';
+import { useEffect, useState } from "react";
+import { getAllBookingsApi, Booking } from "../services/BookingApi";
 
 const AllReservations = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -10,38 +10,53 @@ const AllReservations = () => {
     try {
       setLoading(true);
       const data = await getAllBookingsApi();
-      setBookings(Array.isArray(data) ? data : [data]);
-    } catch (err) {
-      setError((err as Error).message);
+      setBookings(data);
+    } catch {
+      setError("Sinulla ei ole oikeuksia");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAllBookings();
+    fetchAllBookings(); // Haetaan varaukset suoraan ilman admin-tarkistusta
   }, []);
 
-  if (loading) return <p>Ladataan varauksia...</p>;
-  if (error) return <p>Virhe: {error}</p>;
+  if (loading) {
+    return <div>Loading...</div>; // Näytetään latausviesti, jos dataa ollaan hakemassa
+  }
 
   return (
-    <div className='p-5'>
-      <h1 className='text-2xl font-bold mb-4'>Kaikki varaukset (Dev-näkymä)</h1>
+    <div className="p-5">
+      <h1 className="text-2xl font-bold mb-4">Kaikki varaukset (Dev-näkymä)</h1>
       {bookings.length === 0 ? (
         <p>Ei varauksia.</p>
       ) : (
-        <div className='grid gap-4'>
+        <div className="grid gap-4">
           {bookings.map((booking, index) => (
-            <div key={index} className='border rounded-md p-4 shadow'>
-              <p><strong>ID:</strong> {booking.id}</p>
-              <p><strong>Käyttäjä:</strong> {booking.userId}</p>
-              <p><strong>Kuvaus:</strong> {booking.description}</p>
-              <p><strong>Aika:</strong> {booking.startTime} – {booking.endTime}</p>
-              <p><strong>Paikka:</strong> {booking.location}</p>
-              <p><strong>Status:</strong> {booking.status}</p>
+            <div key={index} className="border rounded-md p-4 shadow">
+              <p>
+                <strong>ID:</strong> {booking.id}
+              </p>
+              <p>
+                <strong>Käyttäjä:</strong> {booking.userId}
+              </p>
+              <p>
+                <strong>Kuvaus:</strong> {booking.description}
+              </p>
+              <p>
+                <strong>Aika:</strong> {booking.startTime} – {booking.endTime}
+              </p>
+              <p>
+                <strong>Paikka:</strong> {booking.location}
+              </p>
             </div>
           ))}
+        </div>
+      )}
+      {error && (
+        <div role="alert" className="alert alert-error">
+          <span>{error}</span>
         </div>
       )}
     </div>

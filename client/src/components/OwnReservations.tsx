@@ -30,7 +30,7 @@ const OwnReservations = () => {
       try {
         await deleteBookingApi(id);
         setBookings((prev) => prev.filter((b) => b.id !== id));
-      } catch (err) {
+      } catch {
         alert("Poistaminen epäonnistui");
       }
     }

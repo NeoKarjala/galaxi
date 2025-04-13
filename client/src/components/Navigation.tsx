@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { getToken, isAdmin } from "../utils/jwtUtils";
 
 const Navigation = () => {
   const navigate = useNavigate(); // Luo navigointifunktio
@@ -10,6 +11,16 @@ const Navigation = () => {
     // Navigoi takaisin login-sivulle
     navigate("/login");
   };
+
+  // Haetaan token ja tarkistetaan onko käyttäjä admin
+  let showAllBookingsLink = false;
+  try {
+    const token = getToken(); // Haetaan token
+    showAllBookingsLink = isAdmin(token); // Tarkistetaan rooli
+  } catch {
+    // Jos tokenia ei löydy tai muuta virhettä tapahtuu, ei näytetä linkkiä
+    showAllBookingsLink = false;
+  }
 
   return (
     <>
@@ -32,14 +43,16 @@ const Navigation = () => {
                 Omat varaukset
               </Link>
             </li>
-            <li>
-              <Link
-                className="btn btn-outline bg-primary hover:border-primary hover:text-primary"
-                to="/AllReservations"
-              >
-                Kaikki varaukset
-              </Link>
-            </li>
+            {showAllBookingsLink && (
+              <li>
+                <Link
+                  className="btn btn-outline bg-primary hover:border-primary hover:text-primary"
+                  to="/AllReservations"
+                >
+                  Kaikki varaukset
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
         <div>

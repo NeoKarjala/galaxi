@@ -12,6 +12,7 @@ import AllReservations from "./components/AllReservations";
 import Login from "./routes/Login";
 import { isTokenExpired } from "./utils/jwtUtils";
 import { TokenMonitor } from "./components/TokenMonitor";
+import Register from "./components/Register";
 
 // Suojattu reittikomponentti
 function ProtectedRoute() {
@@ -21,7 +22,6 @@ function ProtectedRoute() {
     localStorage.removeItem("jwtToken"); // Poista vanhentunut token
     return <Navigate to="/login" replace />;
   }
-
   return <Outlet />;
 }
 
@@ -32,6 +32,7 @@ function App() {
       <Routes>
         {/* Login page on oma erillinen reitti ilman Root-layouttia */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
         {/* Suojatut reitit */}
         <Route element={<ProtectedRoute />}>

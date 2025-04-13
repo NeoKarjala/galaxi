@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
+import { addAuthorizationHeader, getToken, isAdmin } from '../utils/jwtUtils';
 
 const apiClient = axios.create({
     baseURL: 'http://localhost:5141/api',
@@ -12,17 +13,27 @@ export interface Booking {
     startTime: string;
     endTime: string;
     location: string;
-    status: string;
 }
 
 // Hakee kaikki varaukset
 export const getAllBookingsApi = async () => {
     try {
-        const response = await apiClient.get<Booking[]>('/booking');
-        return response.data.map(booking => ({ id: booking.id, status: 'Varattu' }));
+        const token = getToken(); // Haetaan token utiliteetista
+        
+        // Lisätään Authorization-header
+        const headers = addAuthorizationHeader(token);
+        
+        // Tarkistetaan onko käyttäjä admin
+        if (!isAdmin(token)) {
+            throw new Error('Sinulla ei ole oikeuksia nähdä kaikkia varauksia.');
+        }
+
+        // API-pyyntö varauksille
+        const response = await apiClient.get<Booking[]>('/bookings', { headers });
+
+        return response.data; // Palautetaan varaukset
     } catch (error) {
-        const err = error as AxiosError;
-        throw new Error(`Error fetching message: ${err.response?.data}`);
+        throw new Error((error as Error).message); // Virheiden käsittely
     }
 };
 

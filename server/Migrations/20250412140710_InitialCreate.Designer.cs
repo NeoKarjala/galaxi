@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GaLaXiBackend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250410094033_InitialCreate")]
+    [Migration("20250412140710_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

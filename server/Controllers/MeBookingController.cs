@@ -52,8 +52,8 @@ namespace GaLaXiBackend.Controllers
             {
                 var overlap = _context.Bookings.Any(b =>
                     b.ComputerId == dto.ComputerId &&
-                    b.StartTime < dto.EndTime &&
-                    b.EndTime > dto.StartTime);
+                    b.StartTime.ToUniversalTime() < dto.EndTime.ToUniversalTime() &&
+                    b.EndTime.ToUniversalTime() > dto.StartTime.ToUniversalTime());
 
                 if (overlap)
                     return BadRequest("This computer is already booked for the selected time.");
@@ -75,8 +75,8 @@ namespace GaLaXiBackend.Controllers
                 Id = Guid.NewGuid(),
                 UserId = userId,
                 Description = dto.Description,
-                StartTime = dto.StartTime,
-                EndTime = dto.EndTime,
+                StartTime = dto.StartTime.ToUniversalTime(),
+                EndTime = dto.EndTime.ToUniversalTime(),
                 ComputerId = dto.ComputerId,
                 IsRoomBooking = dto.IsRoomBooking,
                 RoomBookingType = dto.RoomBookingType,
@@ -99,8 +99,8 @@ namespace GaLaXiBackend.Controllers
                 return NotFound("Booking not found or not authorized.");
 
             booking.Description = dto.Description;
-            booking.StartTime = dto.StartTime;
-            booking.EndTime = dto.EndTime;
+            booking.StartTime = dto.StartTime.ToUniversalTime();
+            booking.EndTime = dto.EndTime.ToUniversalTime();
             booking.ComputerId = dto.ComputerId;
             booking.IsRoomBooking = dto.IsRoomBooking;
             booking.RoomBookingType = dto.RoomBookingType;
@@ -112,7 +112,7 @@ namespace GaLaXiBackend.Controllers
 
         [HttpDelete("{id}")]
         public IActionResult DeleteMyBooking(Guid id)
-        {
+        {            
             var userId = GetUserId();
             var booking = _context.Bookings.FirstOrDefault(b => b.Id == id && b.UserId == userId);
 

@@ -19,16 +19,16 @@ const LoginForm = () => {
     try {
       const response = await loginApi({
         email,
-        password: user // Development mode
+        password: user, // Development mode
       });
 
       const token = response.token;
       const payload = parseJwt(token);
-      const role = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+      const role =
+        payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
 
       setToken(token);
       setRole(role);
-
     } catch (err: any) {
       setError(err.response?.data?.message || "Kirjautuminen epäonnistui");
     } finally {
@@ -37,7 +37,10 @@ const LoginForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-sm mx-auto mt-8 p-4 bg-white shadow rounded">
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-sm mx-auto mt-8 p-4 bg-white shadow rounded"
+    >
       <h2 className="text-xl font-semibold mb-4">Kirjaudu sisään (Dev)</h2>
 
       <input
